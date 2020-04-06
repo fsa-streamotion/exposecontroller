@@ -13,6 +13,7 @@ import (
 	v1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
@@ -79,6 +80,14 @@ func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain s
 }
 
 func (s *IngressStrategy) Add(svc *api.Service) error {
+	fullHostName, err := s.createIngress(s.client, svc)
+	if err == nil {
+		err = s.patchService(s.client, svc, fullHostName)
+	}
+	return err
+}
+
+func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.Service) (string, error) {
 	appName := svc.Annotations["fabric8.io/ingress.name"]
 	if appName == "" {
 		if svc.Labels["release"] != "" {
@@ -111,7 +120,7 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 	}
 	if pathMode == PathModeUsePath {
 		suffix := path
-		if len(suffix) == 0 {
+		if suffix == "" {
 			suffix = "/"
 		}
 		path = UrlJoin("/", svc.Namespace, appName, suffix)
@@ -119,46 +128,25 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 		fullHostName = UrlJoin(hostName, path)
 	}
 
-	ingress, err := s.client.Ingress(svc.Namespace).Get(appName)
-	createIngress := false
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			createIngress = true
-			ingress = &extensions.Ingress{
-				ObjectMeta: api.ObjectMeta{
-					Namespace: svc.Namespace,
-					Name:      appName,
+	ingress := &extensions.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Namespace: svc.Namespace,
+			Name:      appName,
+			Annotations: map[string]string{
+				"fabric8.io/generated-by": "exposecontroller",
+			},
+			Labels: map[string]string{
+				"provider": "fabric8",
+			},
+			OwnerReferences: []api.OwnerReference{
+				{
+					APIVersion: "v1",
+					Kind:       "Service",
+					Name:       svc.Name,
+					UID:        svc.UID,
 				},
-			}
-		} else {
-			return errors.Wrapf(err, "could not check for existing ingress %s/%s", svc.Namespace, appName)
-		}
-	}
-
-	if ingress.Labels == nil {
-		ingress.Labels = map[string]string{}
-		ingress.Labels["provider"] = "fabric8"
-	}
-
-	if ingress.Annotations == nil {
-		ingress.Annotations = map[string]string{}
-		ingress.Annotations["fabric8.io/generated-by"] = "exposecontroller"
-	}
-
-	hasOwner := false
-	for _, o := range ingress.OwnerReferences {
-		if o.UID == svc.UID {
-			hasOwner = true
-			break
-		}
-	}
-	if !hasOwner {
-		ingress.OwnerReferences = append(ingress.OwnerReferences, api.OwnerReference{
-			APIVersion: "v1",
-			Kind:       "Service",
-			Name:       svc.Name,
-			UID:        svc.UID,
-		})
+			},
+		},
 	}
 
 	if s.ingressClass != "" {
@@ -167,21 +155,16 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 	}
 
 	if pathMode == PathModeUsePath {
-		if ingress.Annotations["kubernetes.io/ingress.class"] == "" {
-			ingress.Annotations["kubernetes.io/ingress.class"] = "nginx"
-		}
-		if ingress.Annotations["nginx.ingress.kubernetes.io/ingress.class"] == "" {
-			ingress.Annotations["nginx.ingress.kubernetes.io/ingress.class"] = "nginx"
-		}
-		/*		if ingress.Annotations["nginx.ingress.kubernetes.io/rewrite-target"] == "" {
-					ingress.Annotations["nginx.ingress.kubernetes.io/rewrite-target"] = "/"
-				}
-		*/
+		ingress.Annotations["kubernetes.io/ingress.class"] = "nginx"
+		ingress.Annotations["nginx.ingress.kubernetes.io/ingress.class"] = "nginx"
+		// ingress.Annotations["nginx.ingress.kubernetes.io/rewrite-target"] = "/"
 	}
 	var tlsSecretName string
 
-	if s.tlsAcme {
-		ingress.Annotations["kubernetes.io/tls-acme"] = "true"
+	if s.isTLSEnabled(svc) {
+		if s.tlsAcme {
+			ingress.Annotations["kubernetes.io/tls-acme"] = "true"
+		}
 		if s.tlsSecretName == "" {
 			tlsSecretName = "tls-" + appName
 		} else {
@@ -200,18 +183,6 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 	}
 
 	glog.Infof("Processing Ingress for Service %s with http: %v path mode: %s and path: %s", svc.Name, s.http, pathMode, path)
-
-	backendPaths := []extensions.HTTPIngressPath{}
-	if ingress.Spec.Rules != nil {
-		backendPaths = ingress.Spec.Rules[0].HTTP.Paths
-	}
-
-	// check incase we already have this backend path listed
-	for _, backendPath := range backendPaths {
-		if backendPath.Backend.ServiceName == svc.Name && backendPath.Path == path {
-			return nil
-		}
-	}
 
 	exposePort := svc.Annotations[ExposePortAnnotationKey]
 	if exposePort != "" {
@@ -243,11 +214,10 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 
 	servicePort, err := strconv.Atoi(exposePort)
 	if err != nil {
-		return errors.Wrapf(err, "failed to convert the exposed port '%s' to int", exposePort)
+		return "", errors.Wrapf(err, "failed to convert the exposed port '%s' to int", exposePort)
 	}
 	glog.Infof("Exposing Port %d of Service %s", servicePort, svc.Name)
 
-	ingressPaths := []extensions.HTTPIngressPath{}
 	ingressPath := extensions.HTTPIngressPath{
 		Backend: extensions.IngressBackend{
 			ServiceName: svc.Name,
@@ -255,19 +225,17 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 		},
 		Path: path,
 	}
-	ingressPaths = append(ingressPaths, ingressPath)
-	ingressPaths = append(ingressPaths, backendPaths...)
 
-	ingress.Spec.Rules = []extensions.IngressRule{}
-	rule := extensions.IngressRule{
-		Host: hostName,
-		IngressRuleValue: extensions.IngressRuleValue{
-			HTTP: &extensions.HTTPIngressRuleValue{
-				Paths: ingressPaths,
+	ingress.Spec.Rules = []extensions.IngressRule{
+		{
+			Host: hostName,
+			IngressRuleValue: extensions.IngressRuleValue{
+				HTTP: &extensions.HTTPIngressRuleValue{
+					Paths: []extensions.HTTPIngressPath{ingressPath},
+				},
 			},
 		},
 	}
-	ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
 
 	if s.isTLSEnabled(svc) {
 		ingress.Spec.TLS = []extensions.IngressTLS{
@@ -278,18 +246,69 @@ func (s *IngressStrategy) Add(svc *api.Service) error {
 		}
 	}
 
-	if createIngress {
-		_, err := s.client.Ingress(ingress.Namespace).Create(ingress)
-		if err != nil {
-			return errors.Wrapf(err, "failed to create ingress %s/%s", ingress.Namespace, ingress.Name)
+	existing, err := cli.Ingress(svc.Namespace).Get(appName)
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return "", errors.Wrapf(err, "could not check for existing ingress %s/%s", svc.Namespace, appName)
 		}
-	} else {
-		_, err := s.client.Ingress(svc.Namespace).Update(ingress)
+		_, err := cli.Ingress(ingress.Namespace).Create(ingress)
 		if err != nil {
-			return errors.Wrapf(err, "failed to update ingress %s/%s", ingress.Namespace, ingress.Name)
+			return "", errors.Wrapf(err, "failed to create ingress %s/%s", ingress.Namespace, ingress.Name)
+		}
+	} else if existing.Annotations["fabric8.io/generated-by"] != "exposecontroller" {
+		return "", errors.Errorf("ingress %s/%s already exists", svc.Namespace, appName)
+	} else {
+		update := false
+		if existing.Labels == nil {
+			existing.Labels = map[string]string{}
+		}
+		for k, v := range ingress.Labels {
+			if w, ok := existing.Labels[k]; !ok || v != w {
+				update = true
+				existing.Labels[k] = v
+			}
+		}
+		if !reflect.DeepEqual(ingress.Annotations, existing.Annotations) {
+			update = true
+			existing.Annotations = ingress.Annotations
+		}
+		if !reflect.DeepEqual(ingress.OwnerReferences, existing.OwnerReferences) {
+			update = true
+			existing.OwnerReferences = ingress.OwnerReferences
+		}
+		if len(existing.Spec.Rules) != 1 || existing.Spec.Rules[0].Host != hostName {
+			update = true
+			existing.Spec = ingress.Spec
+		} else {
+			// check incase we already have this backend path listed
+			found := false
+			for _, existingPath := range existing.Spec.Rules[0].HTTP.Paths {
+				if reflect.DeepEqual(ingressPath, existingPath) {
+					found = true
+				}
+			}
+			if !found {
+				update = true
+				existing.Spec = ingress.Spec
+			}
+		}
+		if (len(ingress.Spec.TLS) > 0 || len(existing.Spec.TLS) > 0) && !reflect.DeepEqual(ingress.Spec.TLS, existing.Spec.TLS) {
+			update = true
+			existing.Spec.TLS = ingress.Spec.TLS
+		}
+		if !update {
+			return fullHostName, nil
+		}
+		_, err := cli.Ingress(svc.Namespace).Update(existing)
+		if err != nil {
+			return "", errors.Wrapf(err, "failed to update ingress %s/%s", ingress.Namespace, ingress.Name)
 		}
 	}
 
+	return fullHostName, nil
+}
+
+func (s *IngressStrategy) patchService(cli kubectl.RESTClient, svc *api.Service, fullHostName string) error {
 	cloned, err := api.Scheme.DeepCopy(svc)
 	if err != nil {
 		return errors.Wrap(err, "failed to clone service")
