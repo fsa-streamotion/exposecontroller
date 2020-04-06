@@ -199,7 +199,7 @@ func (s *AmbassadorStrategy) isTLSEnabled(svc *api.Service) bool {
 		return false
 	}
 
-	if len(s.tlsSecretName) > 0 || s.tlsAcme {
+	if s.tlsSecretName != "" || s.tlsAcme {
 		return true
 	}
 
