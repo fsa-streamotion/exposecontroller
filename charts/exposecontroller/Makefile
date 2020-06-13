@@ -15,7 +15,7 @@ build: clean
 	helm lint
 
 install: clean build
-	helm install . --name ${NAME}
+	helm install ${NAME} .
 	watch kubectl get pods
 
 upgrade: clean build
@@ -23,7 +23,7 @@ upgrade: clean build
 	watch kubectl get pods
 
 delete:
-	helm delete --purge ${NAME}
+	helm delete ${NAME}
 
 clean:
 	rm -rf charts
