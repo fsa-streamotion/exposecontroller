@@ -47,7 +47,7 @@ func Load(s string) (*Config, error) {
 
 type Config struct {
 	Domain                string   `yaml:"domain,omitempty" json:"domain"`
-	aliasDomain           string   `yaml:"alias-domain,omitempty" json:"alias_domain"`
+	AliasDomain           string   `yaml:"alias-domain,omitempty" json:"alias_domain"`
 	InternalDomain        string   `yaml:"internal-domain,omitempty" json:"internal_domain"`
 	Exposer               string   `yaml:"exposer" json:"exposer"`
 	PathMode              string   `yaml:"path-mode" json:"path_mode"`
