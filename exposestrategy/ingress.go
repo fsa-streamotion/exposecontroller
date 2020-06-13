@@ -56,6 +56,7 @@ func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain s
 		}
 	}
 	glog.Infof("Using domain: %s", domain)
+	glog.Infof("Using aliasDomain: %s", aliasDomain)
 
 	var urlformat string
 	urlformat, err = getURLFormat(urltemplate)
