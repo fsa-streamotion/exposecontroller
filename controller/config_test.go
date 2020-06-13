@@ -8,11 +8,13 @@ import (
 func TestMapToConfig(t *testing.T) {
 	expectedExposer := "Ingress"
 	expectedDomain := "35.233.48.48.nip.io"
+	expectedAliasDomain := "alias.35.233.48.48.nip.io"
 
 	data := map[string]string{
-		"domain":  expectedDomain,
-		"exposer": expectedExposer,
-		"tls":     "false",
+		"domain":       expectedDomain,
+		"alias-domain": expectedAliasDomain,
+		"exposer":      expectedExposer,
+		"tls":          "false",
 	}
 	config, err := MapToConfig(data)
 	if err != nil {
@@ -22,6 +24,7 @@ func TestMapToConfig(t *testing.T) {
 	} else {
 		assertStringEquals(t, expectedExposer, config.Exposer, "Exposer")
 		assertStringEquals(t, expectedDomain, config.Domain, "Domain")
+		assertStringEquals(t, expectedAliasDomain, config.AliasDomain, "AliasDomain")
 
 		fmt.Printf("Config is %#v\n", config)
 	}
