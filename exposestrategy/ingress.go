@@ -27,6 +27,7 @@ type IngressStrategy struct {
 	encoder runtime.Encoder
 
 	domain         string
+	aliasDomain    string
 	internalDomain string
 	tlsSecretName  string
 	tlsUseWildcard bool
@@ -39,7 +40,7 @@ type IngressStrategy struct {
 
 var _ ExposeStrategy = &IngressStrategy{}
 
-func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain string, internalDomain string, http, tlsAcme bool, tlsSecretName string, tlsUseWildcard bool, urltemplate, pathMode string, ingressClass string) (*IngressStrategy, error) {
+func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain string, aliasDomain string, internalDomain string, http, tlsAcme bool, tlsSecretName string, tlsUseWildcard bool, urltemplate, pathMode string, ingressClass string) (*IngressStrategy, error) {
 	glog.Infof("NewIngressStrategy 1 %v", http)
 	t, err := typeOfMaster(client)
 	if err != nil {
@@ -103,11 +104,15 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 	}
 
 	domain := s.domain
+	aliasDomain := s.aliasDomain
 	if svc.Annotations["fabric8.io/use.internal.domain"] == "true" {
 		domain = s.internalDomain
 	}
 
 	hostName = fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, domain)
+
+	aliasHostName := fmt.Sprintf("%s.%s.%s", hostName, svc.Namespace, aliasDomain)
+
 	tlsHostName := hostName
 	if s.tlsUseWildcard {
 		tlsHostName = "*." + domain
@@ -145,8 +150,40 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 					Name:       svc.Name,
 					UID:        svc.UID,
 				},
-			},
-		},
+			}
+		} else {
+			return errors.Wrapf(err, "could not check for existing ingress %s/%s", svc.Namespace, appName)
+		}
+	}
+
+	if ingress.Labels == nil {
+		ingress.Labels = map[string]string{}
+		ingress.Labels["provider"] = "fabric8"
+	}
+
+	if ingress.Annotations == nil {
+		ingress.Annotations = map[string]string{}
+		ingress.Annotations["fabric8.io/generated-by"] = "exposecontroller"
+	}
+
+	if secondHostName != nil {
+		ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = fmt.Sprintf("%s, %s", hostName, aliasHostName)
+	}
+
+	hasOwner := false
+	for _, o := range ingress.OwnerReferences {
+		if o.UID == svc.UID {
+			hasOwner = true
+			break
+		}
+	}
+	if !hasOwner {
+		ingress.OwnerReferences = append(ingress.OwnerReferences, api.OwnerReference{
+			APIVersion: "v1",
+			Kind:       "Service",
+			Name:       svc.Name,
+			UID:        svc.UID,
+		})
 	}
 
 	if s.ingressClass != "" {
