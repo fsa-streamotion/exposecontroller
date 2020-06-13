@@ -64,6 +64,7 @@ To remove any ingress rules created by exposecontroller use the `--cleanup` flag
 We use a Kubernetes ConfigMap and mutltiple config entries. Full list [here](https://github.com/jenkins-x/exposecontroller/blob/master/controller/config.go#L46)
 
   - `domain` when using either Kubernetes Ingress or OpenShift Routes you will need to set the domain that you've used with your DNS provider (fabric8 uses [cloudflare](https://www.cloudflare.com)) or nip.io if you want a quick way to get running.
+  - `aliasDomain` when using Ingress Nginx, this value will be added as an annotation to the ingress to act as a [server alias](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#server-alias)
   - `exposer` used to describe which strategy exposecontroller should use to access applications
   - `tls-acme` (boolean) used to enable automatic TLS when used in conjunction with [kube-lego](https://github.com/jetstack/kube-lego). Only works with version v2.3.31 onwards.
   - `tls-secret-name` (string) used to enabled TLS using a pre-existing TLS secret
