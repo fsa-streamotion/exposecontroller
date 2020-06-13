@@ -72,7 +72,7 @@ func New(exposer, domain, internalDomain, aliasDomain, urltemplate, nodeIP, rout
 		}
 		return strategy, nil
 	case "":
-		strategy, err := NewAutoStrategy(exposer, domain, internalDomain, urltemplate, nodeIP, routeHost, pathMode, routeUsePath, http, tlsAcme, tlsSecretName, tlsUseWildcard, ingressClass, client, restClientConfig, encoder)
+		strategy, err := NewAutoStrategy(exposer, domain, aliasDomain, internalDomain, urltemplate, nodeIP, routeHost, pathMode, routeUsePath, http, tlsAcme, tlsSecretName, tlsUseWildcard, ingressClass, client, restClientConfig, encoder)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create auto expose strategy")
 		}
