@@ -166,9 +166,7 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 		ingress.Annotations["fabric8.io/generated-by"] = "exposecontroller"
 	}
 
-	if secondHostName != nil {
-		ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = fmt.Sprintf("%s, %s", hostName, aliasHostName)
-	}
+	ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = fmt.Sprintf("%s, %s", hostName, aliasHostName)
 
 	hasOwner := false
 	for _, o := range ingress.OwnerReferences {
