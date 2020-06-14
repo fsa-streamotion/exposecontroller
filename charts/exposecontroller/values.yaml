@@ -4,6 +4,9 @@ BackoffLimit: 5
 Annotations: {}
   # use value of `path` to use path based ingress
 # config:
+#   domain: 127.0.0.1.nip.io
+#   aliasDomain: alias-127.0.0.1.nip.io
+#   exposer: Ingress
 #   pathMode: "path"
 #   tlsacme: true
 #   extravalues:
