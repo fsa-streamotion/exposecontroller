@@ -111,9 +111,8 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 		domain = s.internalDomain
 	}
 
-	hostName = fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, domain)
-
 	aliasHostName := fmt.Sprintf("%s.%s.%s", hostName, svc.Namespace, aliasDomain)
+	hostName = fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, domain)
 
 	tlsHostName := hostName
 	if s.tlsUseWildcard {
@@ -168,7 +167,9 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 		ingress.Annotations["fabric8.io/generated-by"] = "exposecontroller"
 	}
 
-	ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = fmt.Sprintf("%s, %s", hostName, aliasHostName)
+	if aliasDomain != "" {
+		ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = fmt.Sprintf("%s, %s", hostName, aliasHostName)
+	}
 
 	hasOwner := false
 	for _, o := range ingress.OwnerReferences {
