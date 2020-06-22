@@ -47,6 +47,7 @@ func Load(s string) (*Config, error) {
 
 type Config struct {
 	Domain                string   `yaml:"domain,omitempty" json:"domain"`
+	InternalDomain        string   `yaml:"internal-domain,omitempty" json:"internal_domain"`
 	Exposer               string   `yaml:"exposer" json:"exposer"`
 	PathMode              string   `yaml:"path-mode" json:"path_mode"`
 	ApiServer             string   `yaml:"apiserver,omitempty" json:"api_server"`
@@ -61,6 +62,7 @@ type Config struct {
 	HTTP                  bool     `yaml:"http" json:"http"`
 	TLSAcme               bool     `yaml:"tls-acme" json:"tls_acme"`
 	TLSSecretName         string   `yaml:"tls-secret-name" json:"tls_secret_name"`
+	TLSUseWildcard        bool     `yaml:"tls-use-wildcard" json:"tls_use_wildcard"`
 	UrlTemplate           string   `yaml:"urltemplate,omitempty" json:"url_template"`
 	Services              []string `yaml:"services,omitempty" json:"services"`
 	IngressClass          string   `yaml:"ingress-class" json:"ingress_class"`

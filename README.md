@@ -12,6 +12,13 @@ The ingress URL uses the service name that contains the `expose` annotation, if 
 kubectl annotate svc foo fabric8.io/ingress.name=bar
 ```
 
+### Host name
+
+The ingress URL uses the service name that contains the `expose` annotation, if you want the host name to be different yet be a separate ingress object:
+```sh
+kubectl annotate svc foo fabric8.io/host.name=bar
+```
+
 ### Multiple backend services
 
 An ingress rule can have multiple service backends, traffic is managed using a path see https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource
@@ -30,6 +37,19 @@ kubectl annotate svc foo fabric8.io/exposePort=8020
 ```
 
 It not annotation is defined, it will pick the first port available in the list.
+
+### Internal Ingress
+
+If you need to expose a service on an internal ingress contoller:
+```sh
+kubectl annotate svc foo fabric8.io/use.internal.domain: "true"
+```
+
+Also make sure you specify the ingress class for your internal ingress controller; say `kubernetes.io/ingress.class: nginx-internal`
+
+Requirements:
+ - Create an internal ingress contoller.
+ - Set value for `internalDomain` in the `exposecontoller` configmap
 
 ### Daemon mode
 
@@ -154,10 +174,19 @@ If you wish to enable injection of the expose URL into a `ConfigMap` then
   - `expose-no-protocol.service-key.config.fabric8.io/foo` : Exposed URL of the service called `foo` with the http protocol removed
   - `expose-full-no-protocol.service-key.config.fabric8.io/foo` : Exposed URL of the service called `foo` ensuring that the URL ends with a `/` character and the http protocol removed
   - `"jenkins-x.io/skip.tls"` : if tls is enabled and the namespace level this annotation will override it for given service
+  - `expose.config.fabric8.io/ingress.annotations` : List of annotations to add to the genarted ingress rule.  List entries are seperated using a newline `\n` e.g. `fabric8.io/ingress.annotations: "kubernetes.io/ingress.class: nginx\nfoo.io/bar: cheese"`
 
 E.g. when you set an annotation on the config map `expose.config.fabric8.io/url-key: service.url` then an entry to this config map will be added with the key `service.url` and the value of the exposed service URL when a service of the same name as this configmap gets exposed. 
 
 There is an [example](https://github.com/jenkins-x/fabric8-devops/blob/master/gogs/src/main/fabric8/gogs-cm.yml#L27) of the use of these annotations in the Gogs `ConfigMap`
+
+#### Using basic auth from an Ingress controller
+
+Ingress controllers can be configured to provide a basic auth challange on ingress rules.  [Jenkins X](https://jenkins-x.io/) comes with and nginx ingress controller with this enabled out of the box using the default installation admin credentials.  To expose an ingress rule using this basic auth challange with exposecontroller you need to add the following expose annotations to your service:
+
+```yaml
+fabric8.io/ingress.annotations: "kubernetes.io/ingress.class: nginx\nnginx.ingress.kubernetes.io/auth-type: basic\nnginx.ingress.kubernetes.io/auth-secret: jx-basic-auth"
+```
 
 #### Injecting into ConfigMap entries
 
