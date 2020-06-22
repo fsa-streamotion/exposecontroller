@@ -111,4 +111,3 @@ clean:
 .PHONY: docker
 docker: out/exposecontroller-linux-amd64
 	docker build -t "$(REGISTRY)/exposecontroller:dev" .
-	kind load docker-image "$(REGISTRY)/exposecontroller:dev"
