@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-REGISTRY := fabric8
 GO := GO15VENDOREXPERIMENT=1 go
 VERSION ?= $(shell cat version/VERSION)
 OS := $(shell uname)
@@ -107,7 +106,3 @@ $(GOPATH)/src/$(ORG):
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf release
-
-.PHONY: docker
-docker: out/exposecontroller-linux-amd64
-	docker build -t "$(REGISTRY)/exposecontroller:dev" .
