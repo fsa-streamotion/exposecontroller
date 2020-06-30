@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Push To ECR') {
       steps {
-        container('maven') {
+        container('jenkins-go') {
 
           // ensure we're not on a detached head
           sh "git config --global credential.helper store"
