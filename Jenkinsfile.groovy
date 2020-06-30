@@ -23,6 +23,7 @@ pipeline {
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller"
+          sh "go get -v"
           sh "make"
 
           // Build image
