@@ -25,9 +25,9 @@ FORMATTED := $(shell $(GO) fmt $(PACKAGE_DIRS))
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 BUILD_DIR ?= ./out
-ORG := github.com/jenkins-x
+ORG := github.com/fsa-streamotion
 REPOPATH ?= $(ORG)/exposecontroller
-ROOT_PACKAGE := github.com/jenkins-x/exposecontroller
+ROOT_PACKAGE := github.com/fsa-streamotion/exposecontroller
 
 ORIGINAL_GOPATH := $(GOPATH)
 GOPATH := $(shell pwd)/_gopath
@@ -70,29 +70,6 @@ out/exposecontroller-linux-arm: $(GOPATH)/src/$(ORG) $(shell $(GOFILES)) version
 .PHONY: test
 test: $(GOPATH)/src/$(ORG) out/exposecontroller
 	go test -v $(GOPACKAGES)
-
-.PHONY: release
-release: clean test cross
-
-ifeq ($(OS),Darwin)
-	sed -i "" -e "s/version:.*/version: $(VERSION)/" charts/exposecontroller/Chart.yaml
-	sed -i "" -e "s/ImageTag:.*/ImageTag: $(VERSION)/" charts/exposecontroller/values.yaml
-
-else ifeq ($(OS),Linux)
-	sed -i -e "s/version:.*/version: $(VERSION)/" charts/exposecontroller/Chart.yaml
-	sed -i -e "s/ImageTag:.*/ImageTag: $(VERSION)/" charts/exposecontroller/values.yaml
-else
-	exit -1
-endif
-	git add charts/exposecontroller/Chart.yaml
-	git add charts/exposecontroller/values.yaml
-	git commit -m "release $(VERSION)" --allow-empty
-	mkdir -p release
-	cp out/exposecontroller-*-amd64* release
-	cp out/exposecontroller-*-arm* release
-	gh-release checksums sha256
-	GITHUB_ACCESS_TOKEN=$(GITHUB_ACCESS_TOKEN) gh-release create jenkins-x/exposecontroller $(VERSION) master v$(VERSION)
-
 
 .PHONY: cross
 cross: out/exposecontroller-linux-amd64 out/exposecontroller-darwin-amd64 out/exposecontroller-windows-amd64.exe out/exposecontroller-linux-arm
