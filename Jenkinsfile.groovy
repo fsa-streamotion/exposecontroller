@@ -1,6 +1,6 @@
 pipeline {
   agent {
-      label "streamotion-maven"
+      label "jenkins-go"
   }
 
   environment {
@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Push To ECR') {
       steps {
-        container('jenkins-go') {
+        container('go') {
 
           // ensure we're not on a detached head
           sh "git config --global credential.helper store"
