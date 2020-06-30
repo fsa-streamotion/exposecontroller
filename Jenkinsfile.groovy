@@ -19,6 +19,13 @@ pipeline {
 
           sh "echo \$(jx-release-version) > VERSION"
           sh "jx step tag --version \$(cat VERSION)"
+
+          // Build binary
+          sh "git clone https://github.com/fsa-streamotion/exposecontroller.git $GOPATH/src/github.com/fsa-streamotion/exposecontroller"
+          sh "cd $GOPATH/src/github.com/fsa-streamotion/exposecontroller"
+          sh "make"
+
+          // Build image
           sh "skaffold version"
           sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
