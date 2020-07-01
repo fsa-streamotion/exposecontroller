@@ -3,7 +3,7 @@ kind: Config
 build:
   artifacts:
   - image: exposecontroller
-    context: .
+    context: ./home/jenkins/go/src/github.com/jenkins-x/exposecontroller
   tagPolicy:
     envTemplate:
       template: '{{.DOCKER_REGISTRY}}/fsa-streamotion/exposecontroller:{{.VERSION}}'
