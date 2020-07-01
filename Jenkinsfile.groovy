@@ -23,12 +23,12 @@ pipeline {
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
+          sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller ${env.WORKSPACE}"
+
           // Build image
-          dir ('\$GOPATH/src/github.com/jenkins-x/exposecontroller') {
-            sh "skaffold version"
-            sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
-            sh "export VERSION=latest && skaffold build -f skaffold.yaml"
-          }
+          sh "skaffold version"
+          sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
+          sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
           script {
             def buildVersion =  readFile "${env.WORKSPACE}/VERSION"
