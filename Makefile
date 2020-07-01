@@ -27,20 +27,20 @@ GOARCH ?= $(shell go env GOARCH)
 BUILD_DIR ?= ./out
 ORG := github.com/jenkins-x
 REPOPATH ?= $(ORG)/exposecontroller
-# ROOT_PACKAGE := github.com/jenkins-x/exposecontroller
+ROOT_PACKAGE := github.com/jenkins-x/exposecontroller
 
 ORIGINAL_GOPATH := $(GOPATH)
 GOPATH := $(shell pwd)/_gopath
 GITHUB_ACCESS_TOKEN := $(shell cat /builder/home/git-token 2> /dev/null)
 
-# BUILDFLAGS := -ldflags \
-#   " -X $(ROOT_PACKAGE)/version.Version='$(VERSION)'\
-#     -X $(ROOT_PACKAGE)/version.Revision='$(REVISION)'\
-#     -X $(ROOT_PACKAGE)/version.Branch='$(BRANCH)'\
-#     -X $(ROOT_PACKAGE)/version.BuildUser='${USER}@$(HOST)'\
-#     -X $(ROOT_PACKAGE)/version.BuildDate='$(BUILD_DATE)'\
-#     -X $(ROOT_PACKAGE)/version.GoVersion='$(GO_VERSION)'\
-#     -s -w -extldflags '-static'"
+BUILDFLAGS := -ldflags \
+  " -X $(ROOT_PACKAGE)/version.Version='$(VERSION)'\
+    -X $(ROOT_PACKAGE)/version.Revision='$(REVISION)'\
+    -X $(ROOT_PACKAGE)/version.Branch='$(BRANCH)'\
+    -X $(ROOT_PACKAGE)/version.BuildUser='${USER}@$(HOST)'\
+    -X $(ROOT_PACKAGE)/version.BuildDate='$(BUILD_DATE)'\
+    -X $(ROOT_PACKAGE)/version.GoVersion='$(GO_VERSION)'\
+    -s -w -extldflags '-static'"
 
 GOFILES := go list  -f '{{join .Deps "\n"}}' $(REPOPATH) | grep $(REPOPATH) | xargs go list -f '{{ range $$file := .GoFiles }} {{$$.Dir}}/{{$$file}}{{"\n"}}{{end}}'
 GOPACKAGES := $(shell go list ./... | grep -v /vendor/)
@@ -56,16 +56,16 @@ $(ORIGINAL_GOPATH)/bin/exposecontroller: out/exposecontroller-$(GOOS)-$(GOARCH)
 out/exposecontroller: out/exposecontroller-$(GOOS)-$(GOARCH) fmt
 
 out/exposecontroller-darwin-amd64: $(GOPATH)/src/$(ORG) $(shell $(GOFILES)) version/VERSION
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-darwin-amd64 
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-darwin-amd64 $(ROOT_PACKAGE)
 
 out/exposecontroller-linux-amd64: $(GOPATH)/src/$(ORG) $(shell $(GOFILES)) version/VERSION
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-linux-amd64 
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-linux-amd64 $(ROOT_PACKAGE)
 
 out/exposecontroller-windows-amd64.exe: $(GOPATH)/src/$(ORG) $(shell $(GOFILES)) version/VERSION
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-windows-amd64.exe 
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-windows-amd64.exe $(ROOT_PACKAGE)
 
 out/exposecontroller-linux-arm: $(GOPATH)/src/$(ORG) $(shell $(GOFILES)) version/VERSION
-	CGO_ENABLED=0 GOARCH=arm GOOS=linux go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-linux-arm 
+	CGO_ENABLED=0 GOARCH=arm GOOS=linux go build $(BUILDFLAGS) -o $(BUILD_DIR)/exposecontroller-linux-arm $(ROOT_PACKAGE)
 
 .PHONY: test
 test: $(GOPATH)/src/$(ORG) out/exposecontroller
