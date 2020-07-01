@@ -20,6 +20,9 @@ pipeline {
           sh "echo \$(jx-release-version) > VERSION"
           sh "jx step tag --version \$(cat VERSION)"
 
+          // Debug
+          sh "whoami"
+
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller"
