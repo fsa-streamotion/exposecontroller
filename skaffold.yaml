@@ -4,8 +4,6 @@ build:
   artifacts:
   - image: exposecontroller
     context: .
-    docker:
-      network: host
   tagPolicy:
     envTemplate:
       template: '{{.DOCKER_REGISTRY}}/fsa-streamotion/exposecontroller:{{.VERSION}}'
