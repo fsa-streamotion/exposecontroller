@@ -1,14 +1,12 @@
-apiVersion: skaffold/v1beta11
+apiVersion: skaffold/v1beta5
 kind: Config
 build:
   artifacts:
-  - image: exposecontroller # Please do not edit this line! Managed by customize.sh
+  - image: exposecontroller
     context: .
     docker:
       network: host
   tagPolicy:
     envTemplate:
-      template: '{{.DOCKER_REGISTRY}}/fsa-streamotion/exposecontroller:{{.VERSION}}' # Please do not edit this line! Managed by customize.sh
+      template: '{{.DOCKER_REGISTRY}}/fsa-streamotion/exposecontroller:{{.VERSION}}'
   local: {}
-deploy:
-  kubectl: {}  
