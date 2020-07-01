@@ -24,10 +24,12 @@ pipeline {
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
 
-          // Build image
-          sh "skaffold version"
+          // Copy binary
           sh "mkdir out"
           sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
+
+          // Build image
+          sh "skaffold version"
           sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
