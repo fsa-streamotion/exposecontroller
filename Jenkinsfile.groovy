@@ -1,6 +1,6 @@
 pipeline {
   agent {
-      label "jenkins-go"
+      label "streamotion-maven"
   }
 
   environment {
@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Push To ECR') {
       steps {
-        container('go') {
+        container('maven') {
 
           // ensure we're not on a detached head
           sh "git config --global credential.helper store"
@@ -19,6 +19,14 @@ pipeline {
 
           sh "echo \$(jx-release-version) > VERSION"
           sh "jx step tag --version \$(cat VERSION)"
+          
+          // Install Go
+          sh "curl -O https://storage.googleapis.com/golang/go1.14.4.linux-amd64.tar.gz"
+          sh "tar -xvf go1.14.4.linux-amd64.tar.gz"
+          sh "chown -R root:root ./go"
+          sh "mv go /usr/local"
+          sh "export GOPATH=\$HOME/go"
+          sh "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin"
 
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
