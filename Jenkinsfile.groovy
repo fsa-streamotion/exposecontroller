@@ -1,6 +1,6 @@
 pipeline {
   agent {
-      label "jenkins-go"
+      label "streamotion-maven"
   }
 
   environment {
@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Push To ECR') {
       steps {
-        container('go') {
+        container('maven') {
 
           // ensure we're not on a detached head
           sh "git config --global credential.helper store"
@@ -23,7 +23,6 @@ pipeline {
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "go get -v"
           sh "make"
 
           // Build image
