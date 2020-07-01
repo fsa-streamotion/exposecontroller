@@ -22,8 +22,7 @@ pipeline {
 
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "make"
+          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
 
           // Build image
           sh "skaffold version"
