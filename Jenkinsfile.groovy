@@ -21,17 +21,12 @@ pipeline {
           sh "jx step tag --version \$(cat VERSION)"
 
           // Install Go
-          sh "pwd" // Debug for Jenkins weirdness
           sh "curl -O https://storage.googleapis.com/golang/go1.14.4.linux-amd64.tar.gz"
           sh "tar -xvf go1.14.4.linux-amd64.tar.gz"
           sh "chown -R root:root ./go"
-          sh "pwd" // Debug for Jenkins weirdness
           sh "mv go /usr/local"
-          sh "pwd" // Debug for Jenkins weirdness
-          sh "export GOPATH=$HOME/go"
-          sh "pwd" // Debug for Jenkins weirdness
-          sh "export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin"
-          sh "pwd" // Debug for Jenkins weirdness
+          sh "export GOPATH=/usr/local/go"
+          sh "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin"
           sh "whoami" // Debug for Jenkins weirdness
 
           // Build binary
@@ -39,7 +34,7 @@ pipeline {
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$HOME/go/src/github.com/jenkins-x/exposecontroller"
           sh "pwd" // Debug for Jenkins weirdness
           sh "whoami" // Debug for Jenkins weirdness
-          sh "cd \$HOME/go/src/github.com/jenkins-x/exposecontroller && make"
+          sh "cd \$HOME/go/src/github.com/jenkins-x/exposecontroller && export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin && make"
           sh "pwd" // Debug for Jenkins weirdness
 
           // Copy binary
