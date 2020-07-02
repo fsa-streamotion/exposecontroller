@@ -111,7 +111,6 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 		domain = s.internalDomain
 	}
 
-	aliasHostName := fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, aliasDomain)
 	hostName = fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, domain)
 
 	tlsHostName := hostName
@@ -168,6 +167,7 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 	}
 
 	if aliasDomain != "" {
+		aliasHostName := fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, aliasDomain)
 		ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = fmt.Sprintf("%s, %s", hostName, aliasHostName)
 	}
 
