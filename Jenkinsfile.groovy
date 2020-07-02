@@ -15,7 +15,7 @@ pipeline {
       }
 
       environment {
-          PR_VERSION = "\$IMAGE_VERSION-SNAPSHOT-\$BRANCH_NAME-\$BUILD_NUMBER"
+          PR_VERSION = "$BRANCH_NAME-$BUILD_NUMBER"
       }
 
       steps {
