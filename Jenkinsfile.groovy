@@ -28,15 +28,17 @@ pipeline {
           sh "pwd" // Debug for Jenkins weirdness
           sh "mv go /usr/local"
           sh "pwd" // Debug for Jenkins weirdness
-          sh "export GOPATH=\$HOME/go"
+          sh "export GOPATH=$HOME/go"
           sh "pwd" // Debug for Jenkins weirdness
-          sh "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin"
+          sh "export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin"
           sh "pwd" // Debug for Jenkins weirdness
+          sh "whoami" // Debug for Jenkins weirdness
 
           // Build binary
           sh "pwd" // Debug for Jenkins weirdness
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$HOME/go/src/github.com/jenkins-x/exposecontroller"
           sh "pwd" // Debug for Jenkins weirdness
+          sh "whoami" // Debug for Jenkins weirdness
           sh "cd \$HOME/go/src/github.com/jenkins-x/exposecontroller && make"
           sh "pwd" // Debug for Jenkins weirdness
 
