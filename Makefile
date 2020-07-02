@@ -25,7 +25,7 @@ FORMATTED := $(shell $(GO) fmt $(PACKAGE_DIRS))
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 BUILD_DIR ?= ./out
-ORG := github.com/fsa-streamotion
+ORG := github.com/jenkins-x
 REPOPATH ?= $(ORG)/exposecontroller
 ROOT_PACKAGE := github.com/jenkins-x/exposecontroller
 
