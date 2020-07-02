@@ -29,12 +29,12 @@ pipeline {
           // sh "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin"
 
           // Build binary
-          sh "export GOPATH=/usr/local/go && git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
+          sh "export GOPATH=/usr/local/go && git clone git://github.com/jenkins-x/exposecontroller.git /usr/local/go/src/github.com/jenkins-x/exposecontroller"
+          sh "export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:/usr/local/go/bin && cd /usr/local/go/src/github.com/jenkins-x/exposecontroller && make"
 
           // Copy binary
           sh "mkdir out"
-          sh "export GOPATH=/usr/local/go && cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
+          sh "export GOPATH=/usr/local/go && cp /usr/local/go/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
 
           // Build image
           sh "skaffold version"
