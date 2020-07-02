@@ -26,11 +26,12 @@ pipeline {
             // Make Test
             sh "git clone git://github.com/fsa-streamotion/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
             sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make test"
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && go vet "
 
             // Copy binary
             sh "mkdir out"
             sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
+
+            // Build Image and push to ECR
             sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
 
             script {
@@ -41,7 +42,7 @@ pipeline {
         }
       }
         
-    stage('Push To ECR') {
+    stage('Build Master') {
       when {
             branch 'master'
           }
@@ -62,7 +63,7 @@ pipeline {
           sh "mkdir out"
           sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
 
-          // Build image
+          // Build image and push to ECR
           sh "skaffold version"
           sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
