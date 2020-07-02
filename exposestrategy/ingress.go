@@ -111,7 +111,7 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 		domain = s.internalDomain
 	}
 
-	aliasHostName := fmt.Sprintf("%s.%s.%s", hostName, svc.Namespace, aliasDomain)
+	aliasHostName := fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, aliasDomain)
 	hostName = fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, domain)
 
 	tlsHostName := hostName
