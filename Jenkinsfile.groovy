@@ -24,8 +24,9 @@ pipeline {
             sh "jx step git credentials"
 
             // Make Test
-            sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
+            sh "git clone git://github.com/fsa-streamotion/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
             sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make test"
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && go vet "
 
             // Copy binary
             sh "mkdir out"
@@ -54,7 +55,7 @@ pipeline {
           sh "jx step tag --version \$(cat VERSION)"
 
           // Build binary
-          sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
+          sh "git clone git://github.com/fsa-streamotion/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
           
           // Copy binary
