@@ -9,24 +9,47 @@ pipeline {
   }
 
   stages {
+    stage('Build PR') {
+      when {
+          branch 'PR-*'
+      }
+
+      environment {
+          PR_VERSION = "$IMAGE_VERSION-SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER"
+      }
+
+      steps {
+        container('go') {
+            sh "git config --global credential.helper store"
+            sh "jx step git credentials"
+
+            // Make Test
+            sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make test"
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
+            
+            // Copy binary
+            sh "mkdir out"
+            sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
+            sh "export VERSION=$PR_VERSION && skaffold build -f skaffold.yaml"
+
+            script {
+                currentBuild.displayName = PR_VERSION
+                currentBuild.description = "${DOCKER_REGISTRY}/$ORG/$APP_NAME:$PR_VERSION"
+            }
+          }
+        }
+      }
+        
     stage('Push To ECR') {
       steps {
         container('go') {
 
-          // ensure we're not on a detached head
           sh "git config --global credential.helper store"
           sh "jx step git credentials"
 
           sh "echo \$(jx-release-version) > VERSION"
           sh "jx step tag --version \$(cat VERSION)"
-
-          // // Install Go
-          // sh "curl -O https://storage.googleapis.com/golang/go1.14.4.linux-amd64.tar.gz"
-          // sh "tar -xvf go1.14.4.linux-amd64.tar.gz"
-          // sh "chown -R root:root ./go"
-          // sh "mv go /usr/local"
-          // sh "export GOPATH=/usr/local/go"
-          // sh "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin"
 
           // Build binary
           sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
