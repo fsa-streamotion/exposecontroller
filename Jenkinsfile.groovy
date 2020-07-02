@@ -26,22 +26,22 @@ pipeline {
           sh "chown -R root:root ./go"
           sh "mv go /usr/local"
           sh "export GOPATH=/usr/local/go"
-          sh "export PATH=\$PATH:/usr/local/go/bin:/usr/local/go/bin"
+          sh "export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin"
           sh "whoami" // Debug for Jenkins weirdness
 
           // Build binary
           sh "pwd" // Debug for Jenkins weirdness
-          sh "git clone git://github.com/jenkins-x/exposecontroller.git /usr/local/go/src/github.com/jenkins-x/exposecontroller"
+          sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "pwd" // Debug for Jenkins weirdness
           sh "whoami" // Debug for Jenkins weirdness
-          sh "cd /usr/local/go/src/github.com/jenkins-x/exposecontroller && export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:/usr/local/go/bin && make"
+          sh "cd \$GOPATH/go/src/github.com/jenkins-x/exposecontroller && export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin && make"
           sh "pwd" // Debug for Jenkins weirdness
 
           // Copy binary
           sh "pwd" // Debug for Jenkins weirdness
           sh "mkdir out"
           sh "pwd" // Debug for Jenkins weirdness
-          sh "cp /usr/local/go/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
+          sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
           sh "pwd" // Debug for Jenkins weirdness
 
           // Build image
