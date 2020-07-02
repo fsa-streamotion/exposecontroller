@@ -42,6 +42,9 @@ pipeline {
       }
         
     stage('Push To ECR') {
+      when {
+            branch 'master'
+          }
       steps {
         container('go') {
 
