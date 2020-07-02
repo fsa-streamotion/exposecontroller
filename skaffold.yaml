@@ -1,0 +1,10 @@
+apiVersion: skaffold/v1beta3
+kind: Config
+build:
+  artifacts:
+  - image: exposecontroller
+    context: .
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/fsa-streamotion/exposecontroller:{{.VERSION}}'
+  local: {}
