@@ -30,7 +30,7 @@ pipeline {
 
           // Build binary
           sh "export GOPATH=/usr/local/go && git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin && cd \$GOPATH/go/src/github.com/jenkins-x/exposecontroller && make"
+          sh "export GOPATH=/usr/local/go && export PATH=\$PATH:/usr/local/go/bin:\$GOPATH/bin && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
 
           // Copy binary
           sh "mkdir out"
