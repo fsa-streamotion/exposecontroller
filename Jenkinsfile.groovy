@@ -15,7 +15,7 @@ pipeline {
       }
 
       environment {
-          PR_VERSION = "$IMAGE_VERSION-SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER"
+          PR_VERSION = "\$IMAGE_VERSION-SNAPSHOT-\$BRANCH_NAME-\$BUILD_NUMBER"
       }
 
       steps {
@@ -26,12 +26,11 @@ pipeline {
             // Make Test
             sh "git clone git://github.com/jenkins-x/exposecontroller.git \$GOPATH/src/github.com/jenkins-x/exposecontroller"
             sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make test"
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
-            
+
             // Copy binary
             sh "mkdir out"
             sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
-            sh "export VERSION=$PR_VERSION && skaffold build -f skaffold.yaml"
+            sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
 
             script {
                 currentBuild.displayName = PR_VERSION
