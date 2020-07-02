@@ -25,9 +25,9 @@ FORMATTED := $(shell $(GO) fmt $(PACKAGE_DIRS))
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 BUILD_DIR ?= ./out
-ORG := github.com/jenkins-x
+ORG := github.com/fsa-streamotion
 REPOPATH ?= $(ORG)/exposecontroller
-ROOT_PACKAGE := github.com/jenkins-x/exposecontroller
+ROOT_PACKAGE := github.com/fsa-streamotion/exposecontroller
 
 ORIGINAL_GOPATH := $(GOPATH)
 GOPATH := $(shell pwd)/_gopath
