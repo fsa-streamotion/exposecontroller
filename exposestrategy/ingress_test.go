@@ -83,6 +83,123 @@ func TestCreateIngress(t *testing.T) {
 		},
 		"my-service.my-namespace.my-domain.com",
 	}, {
+		"no ingress, with aliasDomain",
+		&IngressStrategy{
+			domain:      "my-domain.com",
+			aliasDomain: "my-alias-domain.com",
+			urltemplate: "%s.%s.%s",
+		},
+		&extensions.Ingress{
+			ObjectMeta: api.ObjectMeta{
+				Namespace:   "my-namespace",
+				Name:        "my-service",
+				Annotations: map[string]string{"not-found": "true"},
+			},
+		},
+		&api.Service{
+			ObjectMeta: api.ObjectMeta{
+				Namespace: "my-namespace",
+				Name:      "my-service",
+			},
+			Spec: api.ServiceSpec{
+				Ports: []api.ServicePort{
+					{Port: 1234},
+				},
+			},
+		},
+		&extensions.Ingress{
+			ObjectMeta: api.ObjectMeta{
+				Namespace: "my-namespace",
+				Name:      "my-service",
+				Annotations: map[string]string{
+					"fabric8.io/generated-by":                  "exposecontroller",
+					"nginx.ingress.kubernetes.io/server-alias": "my-service.my-namespace.my-domain.com, my-service.my-namespace.my-alias-domain.com",
+				},
+				Labels: map[string]string{
+					"provider": "fabric8",
+				},
+			},
+			Spec: extensions.IngressSpec{
+				Rules: []extensions.IngressRule{
+					{
+						Host: "my-service.my-namespace.my-domain.com",
+						IngressRuleValue: extensions.IngressRuleValue{
+							HTTP: &extensions.HTTPIngressRuleValue{
+								Paths: []extensions.HTTPIngressPath{{
+									Backend: extensions.IngressBackend{
+										ServiceName: "my-service",
+										ServicePort: intstr.FromInt(1234),
+									},
+									Path: "",
+								}},
+							},
+						},
+					},
+				},
+			},
+		},
+		"my-service.my-namespace.my-domain.com",
+	}, {
+		"ingress with aliasDomain, aliasDomain needs update",
+		&IngressStrategy{
+			domain:      "my-domain.com",
+			aliasDomain: "my-new-alias-domain.com",
+			urltemplate: "%s.%s.%s",
+		},
+		&extensions.Ingress{
+			ObjectMeta: api.ObjectMeta{
+				Namespace: "my-namespace",
+				Name:      "my-service",
+				Annotations: map[string]string{
+					"fabric8.io/generated-by":                  "exposecontroller",
+					"nginx.ingress.kubernetes.io/server-alias": "my-service.my-namespace.my-domain.com, my-service.my-namespace.my-old-alias-domain.com",
+				},
+			},
+		},
+		&api.Service{
+			ObjectMeta: api.ObjectMeta{
+				Namespace: "my-namespace",
+				Name:      "my-service",
+			},
+			Spec: api.ServiceSpec{
+				Ports: []api.ServicePort{
+					{Port: 1234},
+				},
+			},
+		},
+		&extensions.Ingress{
+			ObjectMeta: api.ObjectMeta{
+				Namespace: "my-namespace",
+				Name:      "my-service",
+				Annotations: map[string]string{
+					"fabric8.io/generated-by":                  "exposecontroller",
+					"nginx.ingress.kubernetes.io/server-alias": "my-service.my-namespace.my-domain.com, my-service.my-namespace.my-new-alias-domain.com",
+				},
+				Labels: map[string]string{
+					"provider": "fabric8",
+				},
+			},
+			Spec: extensions.IngressSpec{
+				Rules: []extensions.IngressRule{
+					{
+						Host: "my-service.my-namespace.my-domain.com",
+						IngressRuleValue: extensions.IngressRuleValue{
+							HTTP: &extensions.HTTPIngressRuleValue{
+								Paths: []extensions.HTTPIngressPath{{
+									Backend: extensions.IngressBackend{
+										ServiceName: "my-service",
+										ServicePort: intstr.FromInt(1234),
+									},
+									Path: "",
+								}},
+							},
+						},
+					},
+				},
+			},
+		},
+		"my-service.my-namespace.my-domain.com",
+	}, {
 		"no ingress, service annotations",
 		&IngressStrategy{
 			domain:         "my-domain.com",

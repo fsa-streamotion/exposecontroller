@@ -27,6 +27,7 @@ type IngressStrategy struct {
 	encoder runtime.Encoder
 
 	domain         string
+	aliasDomain    string
 	internalDomain string
 	tlsSecretName  string
 	tlsUseWildcard bool
@@ -39,7 +40,7 @@ type IngressStrategy struct {
 
 var _ ExposeStrategy = &IngressStrategy{}
 
-func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain string, internalDomain string, http, tlsAcme bool, tlsSecretName string, tlsUseWildcard bool, urltemplate, pathMode string, ingressClass string) (*IngressStrategy, error) {
+func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain string, aliasDomain string, internalDomain string, http, tlsAcme bool, tlsSecretName string, tlsUseWildcard bool, urltemplate, pathMode string, ingressClass string) (*IngressStrategy, error) {
 	glog.Infof("NewIngressStrategy 1 %v", http)
 	t, err := typeOfMaster(client)
 	if err != nil {
@@ -68,6 +69,7 @@ func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain s
 		client:         client,
 		encoder:        encoder,
 		domain:         domain,
+		aliasDomain:    aliasDomain,
 		internalDomain: internalDomain,
 		http:           http,
 		tlsAcme:        tlsAcme,
@@ -101,6 +103,7 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 	if hostName == "" {
 		hostName = appName
 	}
+	originalHostName := hostName
 
 	domain := s.domain
 	if svc.Annotations["fabric8.io/use.internal.domain"] == "true" {
@@ -147,6 +150,13 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 				},
 			},
 		},
+	}
+
+	aliasDomain := s.aliasDomain
+	if aliasDomain != "" {
+		aliasHostName := fmt.Sprintf(s.urltemplate, originalHostName, svc.Namespace, aliasDomain)
+		annotation := fmt.Sprintf("%s, %s", hostName, aliasHostName)
+		ingress.Annotations["nginx.ingress.kubernetes.io/server-alias"] = annotation
 	}
 
 	if s.ingressClass != "" {
