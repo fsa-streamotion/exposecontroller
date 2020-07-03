@@ -57,7 +57,6 @@ func NewIngressStrategy(client *client.Client, encoder runtime.Encoder, domain s
 		}
 	}
 	glog.Infof("Using domain: %s", domain)
-	glog.Infof("Using aliasDomain: %s", aliasDomain)
 
 	var urlformat string
 	urlformat, err = getURLFormat(urltemplate)
@@ -112,7 +111,6 @@ func (s *IngressStrategy) createIngress(cli client.IngressNamespacer, svc *api.S
 	}
 
 	hostName = fmt.Sprintf(s.urltemplate, hostName, svc.Namespace, domain)
-
 	tlsHostName := hostName
 	if s.tlsUseWildcard {
 		tlsHostName = "*." + domain
