@@ -37,7 +37,8 @@ pipeline {
 
             // Build Helm Chart
             sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller"
-            sh "jx step changelog --generate-yaml=false --version \$PR_VERSION"
+            sh "jx step tag --version \$(cat PR_VERSION)"
+            sh "jx step changelog --generate-yaml=false --version v\$PR_VERSION"
             sh "make preview && make print"
 
             script {
