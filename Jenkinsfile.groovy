@@ -34,6 +34,11 @@ pipeline {
             // Build Image and push to ECR
             sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
 
+            dir("charts/$APP_NAME") {
+              sh "jx step changelog --generate-yaml=false --version v\$PR_VERSION"
+              // release the helm chart
+              sh "make preview && make print"
+
             script {
                 currentBuild.displayName = PR_VERSION
                 currentBuild.description = "${DOCKER_REGISTRY}/$ORG/$APP_NAME:$PR_VERSION"
@@ -72,6 +77,20 @@ pipeline {
             def buildVersion =  readFile "${env.WORKSPACE}/VERSION"
             currentBuild.description = "${DOCKER_REGISTRY}/exposecontroller:$buildVersion"
             currentBuild.displayName = "$buildVersion"
+          }
+        }
+      }
+    }
+    stage('Push to Artifactory') {
+        when {
+          branch 'master'
+        }
+        steps {
+          container('go') {
+            dir("$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/$APP_NAME") {
+              sh "jx step changelog --generate-yaml=false --version v\$(cat ../../VERSION)"
+              // release the helm chart
+              sh "make release && make print"
           }
         }
       }
