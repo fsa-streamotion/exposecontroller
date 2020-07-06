@@ -34,7 +34,7 @@ pipeline {
             // Build Image and push to ECR
             sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
 
-            dir("charts/$APP_NAME") {
+            dir("$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/$APP_NAME") {
               sh "jx step changelog --generate-yaml=false --version v\$PR_VERSION"
               // release the helm chart
               sh "make preview && make print"
