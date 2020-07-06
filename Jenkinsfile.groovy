@@ -47,7 +47,6 @@ pipeline {
           }
         }
       }
-    }
         
     stage('Build Master') {
       when {
@@ -99,6 +98,7 @@ pipeline {
           }
         }
       }
+    }
 
   post {
     always {
