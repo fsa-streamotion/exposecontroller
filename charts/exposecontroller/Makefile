@@ -3,7 +3,6 @@ CHART_REPO_KEY := helm-virtual
 NAME := exposecontroller
 NAMESPACE := ${NAME}-test
 OS := $(shell uname)
-VERSION ?= $(shell cat ../../VERSION)
 RELEASE_FILENAME := $(NAME)-$(VERSION).tgz
 
 print:

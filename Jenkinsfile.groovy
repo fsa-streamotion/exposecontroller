@@ -39,7 +39,7 @@ pipeline {
             sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller"
             sh "jx step tag --version \$PR_VERSION"
             sh "jx step changelog --generate-yaml=false --version v\$PR_VERSION"
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make preview && make print"
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make preview && make print"
 
             script {
                 currentBuild.displayName = PR_VERSION
@@ -92,7 +92,7 @@ pipeline {
           container('go') {
             sh "jx step changelog --generate-yaml=false --version v\$(cat ../../VERSION)"
             // release the helm chart
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
+            sh "export VERSION=`cat VERSION` && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
             }
           }
         }
