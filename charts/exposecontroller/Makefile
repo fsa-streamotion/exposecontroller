@@ -3,7 +3,7 @@ CHART_REPO_KEY := helm-virtual
 NAME := exposecontroller
 NAMESPACE := ${NAME}-test
 OS := $(shell uname)
-RELEASE_FILENAME := $(NAME)-$(VERSION).tgz
+RELEASE_FILENAME := $(NAME)-$(shell sed -n 's/^version: //p' Chart.yaml).tgz
 
 print:
 	helm template .
