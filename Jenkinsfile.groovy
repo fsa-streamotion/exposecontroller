@@ -36,7 +36,7 @@ pipeline {
             sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
 
             // Build Helm Chart
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller") {
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller" {
             sh "jx step changelog --generate-yaml=false --version \$PR_VERSION"
             sh "make preview && make print"
 
