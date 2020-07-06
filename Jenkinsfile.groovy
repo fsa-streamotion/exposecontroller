@@ -46,6 +46,7 @@ pipeline {
           }
         }
       }
+    }
         
     stage('Build Master') {
       when {
@@ -81,6 +82,7 @@ pipeline {
         }
       }
     }
+
     stage('Push to Artifactory') {
         when {
           branch 'master'
@@ -91,11 +93,11 @@ pipeline {
               sh "jx step changelog --generate-yaml=false --version v\$(cat ../../VERSION)"
               // release the helm chart
               sh "make release && make print"
+            }
           }
         }
       }
     }
-  }
 
   post {
     always {
