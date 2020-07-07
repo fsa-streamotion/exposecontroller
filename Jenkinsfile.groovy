@@ -35,6 +35,12 @@ pipeline {
             // Build Image and push to ECR
             sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
 
+            // Build Helm Chart
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller"
+            sh "jx step tag --version \$PR_VERSION"
+            sh "jx step changelog --generate-yaml=false --version v\$PR_VERSION"
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make preview && make print"
+
             script {
                 currentBuild.displayName = PR_VERSION
                 currentBuild.description = "${DOCKER_REGISTRY}/$ORG/$APP_NAME:$PR_VERSION"
@@ -49,7 +55,6 @@ pipeline {
           }
       steps {
         container('go') {
-
           sh "git config --global credential.helper store"
           sh "jx step git credentials"
 
@@ -78,7 +83,20 @@ pipeline {
         }
       }
     }
-  }
+
+    stage('Push to Artifactory') {
+        when {
+          branch 'master'
+        }
+        steps {
+          container('go') {
+            sh "jx step changelog --generate-yaml=false --version v\$VERSION"
+            // release the helm chart
+            sh "export VERSION=`cat VERSION` && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
+            }
+          }
+        }
+      }
 
   post {
     always {
