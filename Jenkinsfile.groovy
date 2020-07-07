@@ -90,9 +90,8 @@ pipeline {
         }
         steps {
           container('go') {
-            sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
             // release the helm chart
-            sh "export VERSION=`cat VERSION` && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
+            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
             }
           }
         }
