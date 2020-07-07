@@ -75,6 +75,10 @@ pipeline {
           sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
+          // Push to Artifactory
+          sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
+          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
+
           script {
             def buildVersion =  readFile "${env.WORKSPACE}/VERSION"
             currentBuild.description = "${DOCKER_REGISTRY}/exposecontroller:$buildVersion"
@@ -83,19 +87,7 @@ pipeline {
         }
       }
     }
-
-    stage('Push to Artifactory') {
-        when {
-          branch 'master'
-        }
-        steps {
-          container('go') {
-            // release the helm chart
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
-            }
-          }
-        }
-      }
+  }
 
   post {
     always {
