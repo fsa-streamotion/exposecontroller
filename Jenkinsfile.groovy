@@ -59,6 +59,9 @@ pipeline {
                     sh "jx step git credentials"
 
                     dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
+                        sh "pwd"
+                        sh "ls -l"
+
                         sh "echo \$(jx-release-version) > VERSION"
 
                         // Build binary
