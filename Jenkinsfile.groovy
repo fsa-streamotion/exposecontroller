@@ -58,7 +58,7 @@ pipeline {
                     sh "git config --global credential.helper store"
                     sh "jx step git credentials"
 
-                    dir('$GOPATH/src/github.com/jenkins-x/exposecontroller') {
+                    dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                         sh "echo \$(jx-release-version) > VERSION"
 
                         // Build binary
