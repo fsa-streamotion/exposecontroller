@@ -53,6 +53,9 @@ pipeline {
       when {
             branch 'PR-*'
           }
+      environment {
+          VERSION = "$jx-release-version"
+      }
       steps {
         container('go') {
           sh "git config --global credential.helper store"
@@ -60,6 +63,7 @@ pipeline {
 
           sh "echo \$(jx-release-version) > VERSION"
           sh "jx step tag --version \$(cat VERSION)"
+          sh "jx step changelog --generate-yaml=false --version v\$VERSION"
 
           // Build binary
           sh "mkdir -p \$GOPATH/src/github.com/jenkins-x/exposecontroller"
@@ -76,7 +80,6 @@ pipeline {
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
           // Push to Artifactory
-          sh "jx step changelog --generate-yaml=false --version v\$VERSION"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
 
           script {
