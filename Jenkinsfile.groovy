@@ -53,18 +53,13 @@ pipeline {
       when {
             branch 'PR-*'
           }
-      environment {
-          VERSION = "$jx-release-version"
-      }
       steps {
         container('go') {
           sh "git config --global credential.helper store"
           sh "jx step git credentials"
 
           sh "echo \$(jx-release-version) > VERSION"
-          sh "jx step tag --version \$(cat VERSION)"
-          sh "jx step changelog --generate-yaml=false --version v\$VERSION"
-
+          sh "jx step tag --version \$(cat VERSION) && jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
           // Build binary
           sh "mkdir -p \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cp -R ./ \$GOPATH/src/github.com/jenkins-x/exposecontroller"
