@@ -76,7 +76,7 @@ pipeline {
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
           // Push to Artifactory
-          sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
+          sh "jx step changelog --generate-yaml=false --version v\$VERSION"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
 
           script {
