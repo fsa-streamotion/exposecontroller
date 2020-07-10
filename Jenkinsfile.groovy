@@ -22,13 +22,13 @@ pipeline {
                     sh "mkdir -p $WORKSPACE && cp -R ./ $WORKSPACE"
 
                     // Run tests
-                    run command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
-                    run command: 'make', args: ['test'], dir: WORKSPACE
+                    runCommand command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
+                    runCommand command: 'make', args: ['test'], dir: WORKSPACE
 
                     // Build charts
-                    run command: 'helm', args: ['init', '--client-only'], dir: CHARTS_DIRECTORY
-                    run command: 'make', args: ['build'], dir: CHARTS_DIRECTORY
-                    run command: 'helm', args: ['template', '.'], dir: CHARTS_DIRECTORY
+                    runCommand command: 'helm', args: ['init', '--client-only'], dir: CHARTS_DIRECTORY
+                    runCommand command: 'make', args: ['build'], dir: CHARTS_DIRECTORY
+                    runCommand command: 'helm', args: ['template', '.'], dir: CHARTS_DIRECTORY
                 }
 
                 /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
@@ -80,7 +80,7 @@ pipeline {
     }
 }
 
-def run(Map params) {
+def runCommand(Map params) {
     def commands = []
 
     params?.dir?.with { commands << "cd $it" }
