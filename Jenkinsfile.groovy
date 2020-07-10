@@ -9,20 +9,23 @@ pipeline {
             }*/
             steps {
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                    container('go') {
-                        checkout scm
-                        sh "pwd"
-                        sh "ls -l"
-                        sh "make test"
-                        sh "make"
-                    }
+                    checkout scm
+                    sh "pwd"
+                    sh "ls -l"
                 }
-                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
+                container('go') {
+                    checkout scm
+                    sh "pwd"
+                    sh "ls -l"
+                    /*sh "make test"
+                    sh "make"*/
+                }
+                /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
                     sh "helm init --client-only"
 
                     sh "make build"
                     sh "helm template ."
-                }
+                }*/
             }
         }
 
