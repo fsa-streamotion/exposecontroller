@@ -14,7 +14,7 @@ pipeline {
                     sh "ls -l"
                 }
                 container('go') {
-                    checkout scm
+                    sh "cd /home/jenkins/go/src/github.com/jenkins-x/exposecontroller"
                     sh "pwd"
                     sh "ls -l"
                     /*sh "make test"
