@@ -3,6 +3,7 @@ CHART_REPO_KEY := helm-virtual
 NAME := exposecontroller
 NAMESPACE := ${NAME}-test
 OS := $(shell uname)
+VERSION := $(shell cat ../../version/VERSION)
 RELEASE_FILENAME := $(NAME)-$(shell cat ../../version/VERSION).tgz
 
 print:
@@ -17,7 +18,7 @@ release:
 	helm dependency build
 	helm lint
 	helm init --client-only
-	helm package .
+	helm package --version $(VERSION) .
 	@echo Pushing Chart to Helm repo...
 	@curl --fail -u $(CHARTMUSEUM_CREDS) -X PUT $(CHART_REPO)/$(RELEASE_FILENAME) -T $(RELEASE_FILENAME)
 	@rm -rf ${NAME}*.tgz
