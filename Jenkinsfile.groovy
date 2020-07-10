@@ -83,5 +83,5 @@ def runCommand(Map params) {
     params?.args?.with { command << it.join(' ') }
     commands << command.join(' ')
 
-    sh script: commands.join(' && '), returnStdout: true
+    sh commands.join(' && ')
 }
