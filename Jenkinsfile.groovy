@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label "jenkins-go"
+    }
     stages {
         stage('CI Build and Test') {
             /*when {
@@ -8,12 +10,10 @@ pipeline {
             steps {
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     checkout scm
-                    container('go') {
-                        sh "pwd"
-                        sh "ls -l"
-                        sh "make test"
-                        sh "make"
-                    }
+                    sh "pwd"
+                    sh "ls -l"
+                    sh "make test"
+                    sh "make"
                 }
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
                     sh "helm init --client-only"
