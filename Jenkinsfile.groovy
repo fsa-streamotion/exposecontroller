@@ -107,8 +107,8 @@ pipeline {
             }
             steps {
                 container('go') {
-                    // release the helm chart
-                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', 'v$(cat ../../VERSION)'], dir: CHARTS_DIRECTORY
+                    // Release helm charts
+                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat $WORKSPACE/VERSION)"], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['release'], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['print'], dir: CHARTS_DIRECTORY
                 }
@@ -139,53 +139,3 @@ def runCommand(Map params) {
 
     sh script: commands.join(' && '), returnStdout: params?.returnStdout ?: false
 }
-
-
-/*
-* stage('Build Master') {
-      when {
-            branch 'master'
-          }
-      steps {
-        container('go') {
-          sh "git config --global credential.helper store"
-          sh "jx step git credentials"
-
-          sh "echo \$(jx-release-version) > VERSION"
-          sh "jx step tag --version \$(cat VERSION)"
-
-          // Build binary
-          sh "mkdir -p \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "cp -R ./ \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make"
-
-          // Copy binary
-          sh "mkdir out"
-          sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
-
-          // Build image and push to ECR
-          sh "skaffold version"
-          sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
-          sh "export VERSION=latest && skaffold build -f skaffold.yaml"
-
-          script {
-            def buildVersion =  readFile "${env.WORKSPACE}/VERSION"
-            currentBuild.description = "${DOCKER_REGISTRY}/exposecontroller:$buildVersion"
-            currentBuild.displayName = "$buildVersion"
-          }
-        }
-      }
-    }
-
-    stage('Push to Artifactory') {
-        when {
-          branch 'master'
-        }
-        steps {
-          container('go') {
-            // release the helm chart
-            sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
-            }
-          }
-        }
-      }*/
