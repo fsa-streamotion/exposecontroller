@@ -54,7 +54,12 @@ pipeline {
                   branch 'PR-*'
                 }*/
             steps {
-                container('go') {
+                dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
+                    sh "pwd"
+                    sh "ls -l"
+                }
+
+                /*container('go') {
                     sh "git config --global credential.helper store"
                     sh "jx step git credentials"
                     sh "mkdir -p /home/jenkins/go/src/github.com/jenkins-x/exposecontroller"
@@ -87,7 +92,7 @@ pipeline {
                         currentBuild.description = "${DOCKER_REGISTRY}/exposecontroller:$buildVersion"
                         currentBuild.displayName = "$buildVersion"
                     }
-                }
+                }*/
             }
         }
     }
