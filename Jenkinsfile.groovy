@@ -59,7 +59,7 @@ pipeline {
           sh "jx step git credentials"
 
           sh "echo \$(jx-release-version) > VERSION"
-          sh "jx step tag --version \$(cat VERSION) && jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
+          sh "jx step tag --version \$(cat VERSION)"
           // Build binary
           sh "mkdir -p \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cp -R ./ \$GOPATH/src/github.com/jenkins-x/exposecontroller"
@@ -75,7 +75,7 @@ pipeline {
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
           // Push to Artifactory
-          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
+          sh "export VERSION='cat version/VERSION' && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
 
           script {
             def buildVersion =  readFile "${env.WORKSPACE}/VERSION"
