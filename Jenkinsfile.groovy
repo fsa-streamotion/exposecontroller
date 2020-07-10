@@ -8,8 +8,10 @@ pipeline {
             steps {
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     checkout scm
-                    sh "make test"
-                    sh "make"
+                    container('go') {
+                        sh "make test"
+                        sh "make"
+                    }
                 }
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
                     sh "helm init --client-only"
