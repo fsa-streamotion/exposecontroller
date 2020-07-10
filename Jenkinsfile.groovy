@@ -67,16 +67,16 @@ pipeline {
 
                     // Build image and push to ECR
                     runCommand command: 'skaffold', args: ['version'], dir: WORKSPACE
-                    runCommand command: 'export', args: ['VERSION=`cat $WOKSPACE/VERSION`', '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
+                    runCommand command: 'export', args: ["VERSION=`cat $WOKSPACE/VERSION", '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
                     runCommand command: 'export', args: ['VERSION=latest', '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
 
-                    /*script {
-                        def buildVersion = readFile "$WORKSPACE/VERSION"
+                    script {
+                        def buildVersion = runCommand command: 'cat', args: ["VERSION"], dir: WORKSPACE, returnStdout: true
                         currentBuild.description = "$DOCKER_REGISTRY/$ORG/$APP_NAME:$buildVersion"
                         currentBuild.displayName = "$buildVersion"
-                    }*/
+                    }
 
-                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"], dir: WORKSPACE
+                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat $WORKSPACE/VERSION)"], dir: WORKSPACE
                 }
             }
         }
