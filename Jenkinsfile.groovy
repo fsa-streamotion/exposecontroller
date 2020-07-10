@@ -55,7 +55,8 @@ pipeline {
                 }*/
             steps {
                 dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                    sh "pwd"
+                    sh "echo \$(jx-release-version) > VERSION"
+                    checkout scm
                     sh "ls -l"
                 }
 
