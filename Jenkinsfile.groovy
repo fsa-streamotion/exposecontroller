@@ -67,7 +67,7 @@ pipeline {
 
                     // Build image and push to ECR
                     runCommand command: 'skaffold', args: ['version'], dir: WORKSPACE
-                    runCommand command: 'export', args: ["VERSION=`cat $WORKSPACE/VERSION", '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
+                    runCommand command: 'export', args: ["VERSION=`cat $WORKSPACE/VERSION`", '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
                     runCommand command: 'export', args: ['VERSION=latest', '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
 
                     script {
