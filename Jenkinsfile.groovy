@@ -57,6 +57,7 @@ pipeline {
                 container('go') {
                     sh "git config --global credential.helper store"
                     sh "jx step git credentials"
+                    sh "mkdir -p /home/jenkins/go/src/github.com/jenkins-x/exposecontroller"
 
                     dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                         sh "pwd"
