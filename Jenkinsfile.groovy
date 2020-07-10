@@ -77,10 +77,11 @@ def runCommand(Map params) {
     def commands = []
 
     params?.directory?.with { commands << "cd $it" }
-    params?.command?.with { commands << it }
-    params?.args?.with { commands << it }
 
-    def command = commands.join(' && ')
+    def command = []
+    params?.command?.with { command << it }
+    params?.args?.with { command << it.join(' ') }
+    commands << command.join(' ')
 
-    sh script: command, returnStdout: true
+    sh script: commands.join(' && '), returnStdout: true
 }
