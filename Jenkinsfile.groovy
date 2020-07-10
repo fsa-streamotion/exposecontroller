@@ -17,7 +17,7 @@ pipeline {
                     sh "jx step git credentials"
 
                     // Prepare workspace
-                    sh "mkdir -p $WORKSPACE cp -R ./ $WORKSPACE"
+                    sh "mkdir -p $WORKSPACE && cp -R ./ $WORKSPACE"
 
                     // Run tests
                     runCommand directory: WORKSPACE, command: 'pwd'
