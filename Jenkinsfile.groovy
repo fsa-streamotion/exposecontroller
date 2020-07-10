@@ -2,6 +2,10 @@ pipeline {
     agent {
         label "jenkins-go"
     }
+    environment {
+        ORG = 'fsa-streamotion'
+        APP_NAME = 'exposecontroller'
+    }
     stages {
         stage('CI Build and Test') {
             when {
@@ -9,8 +13,8 @@ pipeline {
             }
             environment {
                 PR_VERSION = "$BRANCH_NAME-$BUILD_NUMBER"
-                WORKSPACE = '$GOPATH/src/github.com/jenkins-x/exposecontroller'
-                CHARTS_DIRECTORY = "$WORKSPACE/charts/exposecontroller"
+                WORKSPACE = "\$GOPATH/src/github.com/jenkins-x/$APP_NAME"
+                CHARTS_DIRECTORY = "$WORKSPACE/charts/$APP_NAME"
             }
             steps {
                 container('go') {
@@ -41,8 +45,8 @@ pipeline {
             environment {
                 CHARTMUSEUM_CREDS = credentials('jenkins-x-chartmuseum')
                 GH_CREDS = credentials('jx-pipeline-git-github-github')
-                WORKSPACE = '$GOPATH/src/github.com/jenkins-x/exposecontroller'
-                CHARTS_DIRECTORY = "$WORKSPACE/charts/exposecontroller"
+                WORKSPACE = "\$GOPATH/src/github.com/jenkins-x/$APP_NAME"
+                CHARTS_DIRECTORY = "$WORKSPACE/charts/$APP_NAME"
             }
             /*when {
                 branch 'master'
@@ -54,10 +58,26 @@ pipeline {
 
                     prepareWorkspace()
 
+                    // Prepare version
                     runCommand command: 'echo', args: ['$(jx-release-version)', '>', 'VERSION'], dir: WORKSPACE
-                    runCommand command: 'jx', args: ['tag', '--version', '$(cat VERSION)'], dir: WORKSPACE
+                    runCommand command: 'jx', args: ['step', 'tag', '--version', '$(cat VERSION)'], dir: WORKSPACE
 
+                    // Build binary
+                    runCommand command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
 
+                    // Build image and push to ECR
+                    runCommand command: 'skaffold', args: ['version'], dir: WORKSPACE
+                    runCommand command: 'export', args: ['VERSION=`cat VERSION`', '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
+                    runCommand command: 'export', args: ['VERSION=latest', '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
+
+                    script {
+                        def buildVersion = readFile "${WORKSPACE}/VERSION"
+                        currentBuild.description = "${DOCKER_REGISTRY}/exposecontroller:$buildVersion"
+                        currentBuild.displayName = "$buildVersion"
+                    }
+
+                    sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
+                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"]
                     /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                         git "https://github.com/jenkins-x/exposecontroller"
 
@@ -73,10 +93,34 @@ pipeline {
                     }*/
                 }
             }
+
+
+        }
+
+        stage('Push to Artifactory') {
+            /*when {
+                branch 'master'
+            }*/
+            environment {
+                WORKSPACE = "\$GOPATH/src/github.com/jenkins-x/$APP_NAME"
+                CHARTS_DIRECTORY = "$WORKSPACE/charts/$APP_NAME"
+            }
+            steps {
+                container('go') {
+                    // release the helm chart
+                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', 'v$(cat ../../VERSION)'], dir: CHARTS_DIRECTORY
+                    runCommand command: 'make', args: ['release'], dir: CHARTS_DIRECTORY
+                    runCommand command: 'make', args: ['print'], dir: CHARTS_DIRECTORY
+                }
+            }
         }
     }
 
-
+    post {
+        always {
+            cleanWs()
+        }
+    }
 }
 
 private void prepareWorkspace() {
