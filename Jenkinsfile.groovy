@@ -13,23 +13,15 @@ pipeline {
             steps {
 
                 container('go') {
-                    ws('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                        sh "pwd"
-                        sh "ls -l"
-                    }
-
-
                     sh "git config --global credential.helper store"
                     sh "jx step git credentials"
 
                     // Prepare workspace
-                    sh "mkdir -p $WORKSPACE"
-                    sh "cp -R ./ $WORKSPACE"
+                    sh "mkdir -p $WORKSPACE cp -R ./ $WORKSPACE"
 
                     // Run tests
-                    sh "cd $WORKSPACE && pwd"
-                    sh "pwd"
-                    sh "ls -l"
+                    runCommand directory: WORKSPACE, command: 'pwd'
+                    runCommand directory: WORKSPACE, command: 'ls', args: ['-l']
                 }
 
                 /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
@@ -79,4 +71,16 @@ pipeline {
             }
         }
     }
+}
+
+def runCommand(Map params) {
+    def commands = []
+
+    params?.directory?.with { commands << "cd $it" }
+    params?.command?.with { commands << it }
+    params?.args?.with { commands << it }
+
+    def command = commands.join(' && ')
+
+    sh script: command, returnStdout: true
 }
