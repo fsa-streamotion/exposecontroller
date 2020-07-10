@@ -76,7 +76,7 @@ pipeline {
                         currentBuild.displayName = "$buildVersion"
                     }
 
-                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"]
+                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat $WORKSPACE/VERSION)"]
                     /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                         git "https://github.com/jenkins-x/exposecontroller"
 
@@ -107,8 +107,7 @@ pipeline {
             steps {
                 container('go') {
                     // Release helm charts
-                    runCommand command: 'cp', args: ["VERSION", CHARTS_DIRECTORY], dir: WORKSPACE
-                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat VERSION)"], dir: CHARTS_DIRECTORY
+                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat $WORKSPACE/VERSION)"], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['release'], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['print'], dir: CHARTS_DIRECTORY
                 }
