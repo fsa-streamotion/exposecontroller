@@ -13,9 +13,11 @@ pipeline {
             steps {
 
                 container('go') {
-                    ws '/home/jenkins/go/src/github.com/jenkins-x/exposecontroller'
-                    sh "pwd"
-                    sh "ls -l"
+                    ws('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
+                        sh "pwd"
+                        sh "ls -l"
+                    }
+
 
                     sh "git config --global credential.helper store"
                     sh "jx step git credentials"
