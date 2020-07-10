@@ -12,7 +12,7 @@ preview:
 	helm dependency build
 	helm lint
 
-release: clean
+release:
 	@test -z $(CHARTMUSEUM_CREDS) && printf "Environment variable CHARTMUSEUM_CREDS not found! \n" && exit 1 || exit 0
 	helm dependency build
 	helm lint

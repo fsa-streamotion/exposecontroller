@@ -75,7 +75,7 @@ pipeline {
           sh "export VERSION=latest && skaffold build -f skaffold.yaml"
 
           // Push to Artifactory
-          sh "export VERSION='cat version/VERSION' && cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
+          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
 
           script {
             def buildVersion =  readFile "${env.WORKSPACE}/VERSION"
