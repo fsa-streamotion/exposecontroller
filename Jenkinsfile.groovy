@@ -48,9 +48,9 @@ pipeline {
                 WORKSPACE = "\$GOPATH/src/github.com/jenkins-x/$APP_NAME"
                 CHARTS_DIRECTORY = "$WORKSPACE/charts/$APP_NAME"
             }
-            /*when {
+            when {
                 branch 'master'
-            }*/
+            }
             steps {
                 container('go') {
                     sh "git config --global credential.helper store"
@@ -82,9 +82,9 @@ pipeline {
         }
 
         stage('Push to Artifactory') {
-            /*when {
+            when {
                 branch 'master'
-            }*/
+            }
             environment {
                 WORKSPACE = "\$GOPATH/src/github.com/jenkins-x/$APP_NAME"
                 CHARTS_DIRECTORY = "$WORKSPACE/charts/$APP_NAME"
@@ -92,7 +92,7 @@ pipeline {
             steps {
                 container('go') {
                     // Release helm charts
-                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat $WORKSPACE/VERSION)"], dir: CHARTS_DIRECTORY
+                    // runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat $WORKSPACE/VERSION)"], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['release'], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['print'], dir: CHARTS_DIRECTORY
                 }
