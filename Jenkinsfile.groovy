@@ -55,7 +55,7 @@ pipeline {
                     prepareWorkspace()
 
                     runCommand command: 'echo', args: ['$(jx-release-version)', '>', 'VERSION'], dir: WORKSPACE
-                    runCommand command: 'jx', args: ['tag', '--version', '$(var VERSIOM)'], dir: WORKSPACE
+                    runCommand command: 'jx', args: ['tag', '--version', '$(cat VERSION)'], dir: WORKSPACE
 
 
                     /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
