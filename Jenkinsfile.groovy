@@ -76,7 +76,7 @@ pipeline {
 
           // Push to Artifactory
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && jx step tag --version \$(cat ../../VERSION)"
-          sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && jx step changelog --generate-yaml=false --version v\$(cat ../../VERSION)"
+          // sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && jx step changelog --generate-yaml=false --version v\$(cat ../../VERSION)"
           sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make release && make print"
 
           script {
