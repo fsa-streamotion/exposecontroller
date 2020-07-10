@@ -20,8 +20,13 @@ pipeline {
                     sh "mkdir -p $WORKSPACE && cp -R ./ $WORKSPACE"
 
                     // Run tests
-                    runCommand directory: WORKSPACE, command: 'pwd'
-                    runCommand directory: WORKSPACE, command: 'ls', args: ['-l']
+                    run dir: WORKSPACE, command: 'make', args: ['test']
+                    run dir: WORKSPACE, command: 'make', args: ['out/exposecontroller-linux-amd64']
+
+                    // Build charts
+                    run command: 'helm', args: ['init', '--client-only'], dir: "$WORKSPACE/charts/exposecontroller"
+                    run command: 'make', args: ['build'], dir: "$WORKSPACE/charts/exposecontroller"
+                    run command: 'helm', args: ['template'], dir: "$WORKSPACE/charts/exposecontroller"
                 }
 
                 /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
@@ -73,10 +78,10 @@ pipeline {
     }
 }
 
-def runCommand(Map params) {
+def run(Map params) {
     def commands = []
 
-    params?.directory?.with { commands << "cd $it" }
+    params?.dir?.with { commands << "cd $it" }
 
     def command = []
     params?.command?.with { command << it }
