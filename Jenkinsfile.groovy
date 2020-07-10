@@ -60,7 +60,7 @@ pipeline {
 
           sh "echo \$(jx-release-version) > VERSION"
           sh "jx step tag --version \$(cat VERSION)"
-          sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
+          // sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
           // Build binary
           sh "mkdir -p \$GOPATH/src/github.com/jenkins-x/exposecontroller"
           sh "cp -R ./ \$GOPATH/src/github.com/jenkins-x/exposecontroller"
