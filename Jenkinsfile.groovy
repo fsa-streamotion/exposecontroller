@@ -57,7 +57,18 @@ pipeline {
                 dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     sh "echo \$(jx-release-version) > VERSION"
                     checkout scm
-                    sh "ls -l"
+
+                    // Tag version
+                    sh "jx step tag --version \$(cat VERSION)"
+                    sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
+
+                    // Build image and push to ECR
+                    sh "skaffold version"
+                    sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
+                    sh "export VERSION=latest && skaffold build -f skaffold.yaml"
+
+                    // Push to Artifactory
+                    sh "make release && make print"
                 }
 
                 /*container('go') {
