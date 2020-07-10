@@ -76,20 +76,7 @@ pipeline {
                         currentBuild.displayName = "$buildVersion"
                     }
 
-                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat $WORKSPACE/VERSION)"]
-                    /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                        git "https://github.com/jenkins-x/exposecontroller"
-
-                        sh "echo \$(jx-release-version) > version/VERSION"
-                        sh "git add version/VERSION"
-                        sh "git commit -m 'release \$(cat version/VERSION)'"
-
-                        sh "GITHUB_ACCESS_TOKEN=$GH_CREDS_PSW make release"
-                    }
-                    dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
-                        sh "helm init --client-only"
-                        sh "make release"
-                    }*/
+                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"], dir: WORKSPACE
                 }
             }
 
