@@ -1,117 +1,48 @@
 pipeline {
-    agent {
-        label "jenkins-go"
-    }
-
-    environment {
-        ORG = 'fsa-streamotion'
-        APP_NAME = 'exposecontroller'
-    }
-
+    agent any
     stages {
-        /*stage('Build PR') {
-          when {
-              branch 'TESTPR-*'
-          }
-
-          environment {
-              PR_VERSION = "$BRANCH_NAME-$BUILD_NUMBER"
-          }
-
-          steps {
-            container('go') {
-                sh "git config --global credential.helper store"
-                sh "jx step git credentials"
-
-                // Make Test
-                sh "mkdir -p \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-                sh "cp -R ./ \$GOPATH/src/github.com/jenkins-x/exposecontroller"
-                sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller && make test"
-
-                // Copy binary
-                sh "mkdir out"
-                sh "cp \$GOPATH/src/github.com/jenkins-x/exposecontroller/out/exposecontroller-linux-amd64 ./out"
-
-                // Build Image and push to ECR
-                sh "export VERSION=\$PR_VERSION && skaffold build -f skaffold.yaml"
-
-                // Build Helm Chart
-                sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller"
-                sh "jx step tag --version \$PR_VERSION"
-                sh "jx step changelog --generate-yaml=false --version v\$PR_VERSION"
-                sh "cd \$GOPATH/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller && make preview && make print"
-
-                script {
-                    currentBuild.displayName = PR_VERSION
-                    currentBuild.description = "${DOCKER_REGISTRY}/$ORG/$APP_NAME:$PR_VERSION"
-                }
-              }
+        stage('CI Build and Test') {
+            when {
+                branch 'PR-*'
             }
-          }*/
-
-        stage('Build Master') {
-            /*when {
-                  branch 'PR-*'
-                }*/
             steps {
-                dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                    sh "echo \$(jx-release-version) > VERSION"
+                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     checkout scm
-
-                    // Tag version
-                    sh "jx step tag --version \$(cat VERSION)"
-                    sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
-
-                    // Build image and push to ECR
-                    sh "skaffold version"
-                    sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
-                    sh "export VERSION=latest && skaffold build -f skaffold.yaml"
-
-                    // Push to Artifactory
-                    sh "make release && make print"
+                    sh "make test"
+                    sh "make"
                 }
+                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
+                    sh "helm init --client-only"
 
-                /*container('go') {
-                    sh "git config --global credential.helper store"
-                    sh "jx step git credentials"
-                    sh "mkdir -p /home/jenkins/go/src/github.com/jenkins-x/exposecontroller"
-
-                    dir('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                        sh "pwd"
-                        sh "ls -l"
-
-                        sh "echo \$(jx-release-version) > VERSION"
-
-                        // Build binary
-                        checkout scm
-                        sh "make"
-
-                        // Build image and push to ECR
-                        sh "skaffold version"
-                        sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
-                        sh "export VERSION=latest && skaffold build -f skaffold.yaml"
-
-                        // Push to Artifactory
-                        sh "make release && make print"
-
-                        // Tag version
-                        sh "jx step tag --version \$(cat VERSION)"
-                        sh "jx step changelog --generate-yaml=false --version v\$(cat VERSION)"
-                    }
-
-                    script {
-                        def buildVersion = readFile "${env.WORKSPACE}/VERSION"
-                        currentBuild.description = "${DOCKER_REGISTRY}/exposecontroller:$buildVersion"
-                        currentBuild.displayName = "$buildVersion"
-                    }
-                }*/
+                    sh "make build"
+                    sh "helm template ."
+                }
             }
         }
-    }
 
-    post {
-        always {
-            cleanWs()
+        stage('Build and Release') {
+            environment {
+                CHARTMUSEUM_CREDS = credentials('jenkins-x-chartmuseum')
+                GH_CREDS = credentials('jx-pipeline-git-github-github')
+            }
+            when {
+                branch 'master'
+            }
+            steps {
+                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
+                    git "https://github.com/jenkins-x/exposecontroller"
+
+                    sh "echo \$(jx-release-version) > version/VERSION"
+                    sh "git add version/VERSION"
+                    sh "git commit -m 'release \$(cat version/VERSION)'"
+
+                    sh "GITHUB_ACCESS_TOKEN=$GH_CREDS_PSW make release"
+                }
+                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
+                    sh "helm init --client-only"
+                    sh "make release"
+                }
+            }
         }
     }
 }
