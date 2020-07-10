@@ -2,9 +2,9 @@ pipeline {
     agent any
     stages {
         stage('CI Build and Test') {
-            when {
+            /*when {
                 branch 'PR-*'
-            }
+            }*/
             steps {
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     checkout scm
