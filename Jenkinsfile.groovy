@@ -8,7 +8,9 @@ pipeline {
                 branch 'PR-*'
             }*/
             environment {
+                PR_VERSION = "$BRANCH_NAME-$BUILD_NUMBER"
                 WORKSPACE = '$GOPATH/src/github.com/jenkins-x/exposecontroller'
+                CHARTS_DIRECTORY = "$WORKSPACE/charts/exposecontroller"
             }
             steps {
 
@@ -20,13 +22,13 @@ pipeline {
                     sh "mkdir -p $WORKSPACE && cp -R ./ $WORKSPACE"
 
                     // Run tests
-                    run dir: WORKSPACE, command: 'make', args: ['test']
-                    run dir: WORKSPACE, command: 'make', args: ['out/exposecontroller-linux-amd64']
+                    run command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
+                    run command: 'make', args: ['test'], dir: WORKSPACE
 
                     // Build charts
-                    run command: 'helm', args: ['init', '--client-only'], dir: "$WORKSPACE/charts/exposecontroller"
-                    run command: 'make', args: ['build'], dir: "$WORKSPACE/charts/exposecontroller"
-                    run command: 'helm', args: ['template'], dir: "$WORKSPACE/charts/exposecontroller"
+                    run command: 'helm', args: ['init', '--client-only'], dir: CHARTS_DIRECTORY
+                    run command: 'make', args: ['build'], dir: CHARTS_DIRECTORY
+                    run command: 'helm', args: ['template', '.'], dir: CHARTS_DIRECTORY
                 }
 
                 /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
