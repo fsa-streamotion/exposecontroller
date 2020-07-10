@@ -108,7 +108,8 @@ pipeline {
             steps {
                 container('go') {
                     // Release helm charts
-                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat $WORKSPACE/VERSION)"], dir: CHARTS_DIRECTORY
+                    runCommand command: 'cp', args: ["VERSION", CHARTS_DIRECTORY], dir: WORKSPACE
+                    runCommand command: 'jx', args: ['step', 'changelog', '--generate-yaml=false', '--version', "v\$(cat VERSION)"], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['release'], dir: CHARTS_DIRECTORY
                     runCommand command: 'make', args: ['print'], dir: CHARTS_DIRECTORY
                 }
