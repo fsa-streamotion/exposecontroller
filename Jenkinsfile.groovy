@@ -76,7 +76,7 @@ pipeline {
                         currentBuild.displayName = "$buildVersion"
                     }
 
-                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"], dir: WORKSPACE
+                    runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat $WORKSPACE/VERSION)"], dir: WORKSPACE
                 }
             }
 
