@@ -9,6 +9,8 @@ pipeline {
                 dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     checkout scm
                     container('go') {
+                        sh "pwd"
+                        sh "ls -l"
                         sh "make test"
                         sh "make"
                     }
