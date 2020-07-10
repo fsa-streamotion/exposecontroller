@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Build PR') {
       when {
-          branch 'TESTPR-*'
+          branch 'PR-*'
       }
 
       environment {
@@ -51,7 +51,7 @@ pipeline {
         
     stage('Build Master') {
       when {
-            branch 'PR-*'
+            branch 'master'
           }
       steps {
         container('go') {
