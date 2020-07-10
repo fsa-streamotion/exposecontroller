@@ -48,28 +48,30 @@ pipeline {
                 branch 'master'
             }*/
             steps {
-                sh "git config --global credential.helper store"
-                sh "jx step git credentials"
+                container('go') {
+                    sh "git config --global credential.helper store"
+                    sh "jx step git credentials"
 
-                prepareWorkspace()
+                    prepareWorkspace()
 
-                runCommand command: 'echo', args: ['$(jx-release-version)', '>', 'VERSION'], dir: WORKSPACE
-                runCommand command: 'jx', args: ['tag', '--version', '$(var VERSIOM)'], dir: WORKSPACE
+                    runCommand command: 'echo', args: ['$(jx-release-version)', '>', 'VERSION'], dir: WORKSPACE
+                    runCommand command: 'jx', args: ['tag', '--version', '$(var VERSIOM)'], dir: WORKSPACE
 
 
-                /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
-                    git "https://github.com/jenkins-x/exposecontroller"
+                    /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
+                        git "https://github.com/jenkins-x/exposecontroller"
 
-                    sh "echo \$(jx-release-version) > version/VERSION"
-                    sh "git add version/VERSION"
-                    sh "git commit -m 'release \$(cat version/VERSION)'"
+                        sh "echo \$(jx-release-version) > version/VERSION"
+                        sh "git add version/VERSION"
+                        sh "git commit -m 'release \$(cat version/VERSION)'"
 
-                    sh "GITHUB_ACCESS_TOKEN=$GH_CREDS_PSW make release"
+                        sh "GITHUB_ACCESS_TOKEN=$GH_CREDS_PSW make release"
+                    }
+                    dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
+                        sh "helm init --client-only"
+                        sh "make release"
+                    }*/
                 }
-                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
-                    sh "helm init --client-only"
-                    sh "make release"
-                }*/
             }
         }
     }
