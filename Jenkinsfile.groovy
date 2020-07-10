@@ -7,8 +7,24 @@ pipeline {
             /*when {
                 branch 'PR-*'
             }*/
+            environment {
+                WORKSPACE = '$GOPATH/src/github.com/jenkins-x/exposecontroller'
+            }
             steps {
-                dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
+
+                container('go') {
+                    sh "git config --global credential.helper store"
+                    sh "jx step git credentials"
+
+                    // Prepare workspace
+                    sh "mkdir -p $WORKSPACE"
+                    sh "cp -R ./ $WORKSPACE"
+                    sh "cd $WORKSPACE"
+                    sh "pwd"
+                    sh "ls -l"
+                }
+
+                /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                     checkout scm
                     sh "pwd"
                     sh "ls -l"
@@ -18,10 +34,10 @@ pipeline {
                     sh "cd /home/jenkins/go/src/github.com/jenkins-x/exposecontroller"
                     sh "pwd"
                     sh "ls -l"
-                    /*sh "make test"
-                    sh "make"*/
+                    *//*sh "make test"
+                    sh "make"*//*
                 }
-                /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
+                *//*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller/charts/exposecontroller') {
                     sh "helm init --client-only"
 
                     sh "make build"
