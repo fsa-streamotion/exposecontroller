@@ -1,4 +1,4 @@
-Image: "gcr.io/jenkinsxio/exposecontroller"
+Image: "053457794187.dkr.ecr.ap-southeast-2.amazonaws.com/fsa-streamotion/exposecontroller"
 ImageTag: "latest"
 BackoffLimit: 5
 Annotations: {}
