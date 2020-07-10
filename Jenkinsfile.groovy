@@ -76,7 +76,6 @@ pipeline {
                         currentBuild.displayName = "$buildVersion"
                     }
 
-                    sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
                     runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"]
                     /*dir ('/home/jenkins/go/src/github.com/jenkins-x/exposecontroller') {
                         git "https://github.com/jenkins-x/exposecontroller"
