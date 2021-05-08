@@ -77,7 +77,7 @@ pipeline {
                         --duration-seconds 900 > /tmp/ecr-access.txt
                     '''
                     
-                    runCommand command: 'export', args: ['VERSION=$cat(VERSION)'], dir: WORKSPACE
+                    runCommand command: 'export', args: ['VERSION=$(cat VERSION)'], dir: WORKSPACE
                     
                     sh '''
                         set +x
