@@ -65,7 +65,7 @@ pipeline {
                     // Build binary
                     runCommand command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
 
-                    // TODO: Bake this into the jenkins builder image
+                    // TODO: Bake this into the jenkins builder image!
                     sh 'pip install awscli'
                     
                     // Build image and push to ECR
@@ -79,7 +79,7 @@ pipeline {
                     
                     sh '''
                         set +x
-                        export VERSION=$(cat VERSION)
+                        export VERSION=$(cat $WORKSPACE/VERSION)
                         && export AWS_ACCESS_KEY_ID=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.AccessKeyId') \
                         && export AWS_SECRET_ACCESS_KEY=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.SecretAccessKey') \
                         && export AWS_SESSION_TOKEN=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.SessionToken') \
