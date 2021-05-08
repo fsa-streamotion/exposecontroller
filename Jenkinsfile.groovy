@@ -66,8 +66,25 @@ pipeline {
                     runCommand command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
 
                     // Build image and push to ECR
-                    runCommand command: 'skaffold', args: ['version'], dir: WORKSPACE
-                    runCommand command: 'export', args: ["VERSION=`cat $WORKSPACE/VERSION`", '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
+                    sh '''
+                        aws sts assume-role-with-web-identity \
+                        --role-arn $AWS_ROLE_ARN \
+                        --role-session-name ecraccess \
+                        --web-identity-token file://\$AWS_WEB_IDENTITY_TOKEN_FILE \
+                        --duration-seconds 900 > /tmp/ecr-access.txt
+                    '''
+                    
+                    sh '''
+                        set +x
+                        export VERSION=$(cat VERSION)
+                        && export AWS_ACCESS_KEY_ID=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.AccessKeyId') \
+                        && export AWS_SECRET_ACCESS_KEY=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.SecretAccessKey') \
+                        && export AWS_SESSION_TOKEN=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.SessionToken') \
+                        && set -x \
+                        && skaffold version \
+                        && skaffold build -f skaffold.yaml
+                    '''
+                    
                     runCommand command: 'export', args: ['VERSION=latest', '&&', 'skaffold', 'build', '-f', 'skaffold.yaml'], dir: WORKSPACE
 
                     script {
@@ -75,7 +92,7 @@ pipeline {
                         currentBuild.description = "$DOCKER_REGISTRY/$ORG/$APP_NAME:$buildVersion"
                         currentBuild.displayName = "$buildVersion"
                     }
-
+                    
                     runCommand command: 'jx', args: ['step', 'post', 'build', '--image', "$DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat $WORKSPACE/VERSION)"], dir: WORKSPACE
                 }
             }
