@@ -77,10 +77,11 @@ pipeline {
                         --duration-seconds 900 > /tmp/ecr-access.txt
                     '''
                     
+                    runCommand command: 'export', args: ['VERSION=$cat(VERSION)'], dir: WORKSPACE
+                    
                     sh '''
                         set +x
-                        export VERSION=$(cat $WORKSPACE/VERSION)
-                        && export AWS_ACCESS_KEY_ID=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.AccessKeyId') \
+                        export AWS_ACCESS_KEY_ID=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.AccessKeyId') \
                         && export AWS_SECRET_ACCESS_KEY=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.SecretAccessKey') \
                         && export AWS_SESSION_TOKEN=\$(cat /tmp/ecr-access.txt | jq -r '.Credentials.SessionToken') \
                         && set -x \
