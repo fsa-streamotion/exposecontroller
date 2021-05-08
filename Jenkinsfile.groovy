@@ -65,6 +65,9 @@ pipeline {
                     // Build binary
                     runCommand command: 'make', args: ['out/exposecontroller-linux-amd64'], dir: WORKSPACE
 
+                    // TODO: Bake this into the jenkins builder image
+                    sh 'pip install awscli'
+                    
                     // Build image and push to ECR
                     sh '''
                         aws sts assume-role-with-web-identity \
